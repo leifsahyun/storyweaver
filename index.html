@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href="css/styles.css" rel="stylesheet">
+	<script src="js/fabric.min.js"></script>
+	<script src="js/classes.js"></script>
+	<script src="js/tools.js"></script>
+	<title>Weaver</title>
+  </head>
+  <body> <!--onload="init()">-->
+
+    <div id="canvas-div">
+      <canvas width="1000" height="1000" id="fabric_canvas"></canvas>
+	  <script src="js/weaver.js"></script>
+    </div>
+	<div id="tool-menu">
+	  <div class="button-menu" id="default-tools" >
+		<h>Default Tools</h>
+		<div>
+		  <button onclick="selectTool('add:thread')">Add Thread</button>
+		  <button onclick="selectTool('add:event')">Add Event</button>
+		</div>
+	  </div>
+	  <div class="button-menu" id="thread-tools" style="display:none">
+		<h>Thread Tools</h>
+		<div>
+		  <button onclick="selectTool('thread:remove')">Remove Thread</button>
+		  <button onclick="selectTool('thread:clip')">Clip Thread</button>
+		  <button onclick="selectTool('thread:split')">Split Thread</button>
+		  <button onclick="selectTool('thread:merge')">Merge Thread</button>
+		</div>
+		<textarea id="thread-title" onchange="updateText('thread-title')"></textarea>
+	  </div>
+	  <div class="button-menu" id="event-tools" style="display:none">
+		<h>Event Tools</h>
+		<div>
+		  <button onclick="selectTool('event:remove')">Remove Event</button>
+		  <button onclick="selectTool('event:link')">Link Event</button>
+		  <button onclick="selectTool('event:clone')">Clone Event</button>
+		</div>
+		<textarea id="event-title" onchange="updateText('event-title')"></textarea>
+		<textarea id="event-details" onchange="updateText('event-details')"></textarea>
+	  </div>
+	  
+	</div>
+	  
+  </body>
+</html>		

@@ -1,0 +1,18 @@
+body
+{
+  font-size: 40pt;
+}
+
+#canvas-div
+{
+  left: 0;
+  top: 0;
+  overflow: scroll;
+}
+
+#tool-menu
+{
+  position: absolute;
+  top: 1000px;
+}
+
