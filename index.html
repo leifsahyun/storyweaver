@@ -5,18 +5,20 @@
 	<script src="js/fabric.min.js"></script>
 	<script src="js/classes.js"></script>
 	<script src="js/tools.js"></script>
-	<title>Weaver</title>
+	<title>Storyweaver</title>
   </head>
   <body> <!--onload="init()">-->
 
     <div id="canvas-div">
-      <canvas width="1000" height="1000" id="fabric_canvas"></canvas>
+      <canvas width="1000" height="800" id="fabric_canvas"></canvas>
 	  <script src="js/weaver.js"></script>
     </div>
 	<div id="tool-menu">
 	  <div class="button-menu" id="default-tools" >
 		<h>Default Tools</h>
 		<div>
+		  <button onclick="selectTool('file:save')">Save File</button>
+		  <button onclick="selectTool('file:load')">Load File</button>
 		  <button onclick="selectTool('add:thread')">Add Thread</button>
 		  <button onclick="selectTool('add:event')">Add Event</button>
 		</div>
@@ -41,7 +43,11 @@
 		<textarea id="event-title" onchange="updateText('event-title')"></textarea>
 		<textarea id="event-details" onchange="updateText('event-details')"></textarea>
 	  </div>
-	  
+	  <footer>
+		<p>Created by Leif Sahyun, copyright 2020</p>
+		<p>Contact information: <a href="mailto:leifsahyun@gmail.com">
+		leifsahyun@gmail.com</a>.</p>
+	  </footer>
 	</div>
 	  
   </body>

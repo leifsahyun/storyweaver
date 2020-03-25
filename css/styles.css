@@ -1,6 +1,12 @@
 body
 {
-  font-size: 40pt;
+  font-size: 20pt;
+}
+
+footer
+{
+	font-size: 8pt;
+	color: #444444;
 }
 
 #canvas-div
@@ -13,6 +19,6 @@ body
 #tool-menu
 {
   position: absolute;
-  top: 1000px;
+  bottom: 0px;
 }
 

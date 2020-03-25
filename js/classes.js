@@ -62,40 +62,51 @@ var LabeledButton = fabric.util.createClass(fabric.Circle, {
 	
 });
 
-var Event = fabric.util.createClass(LabeledButton, {
+fabric.Event = fabric.util.createClass(LabeledButton, {
 	
 	type: "event",
 	
 	initialize: function(x,y){
 		this.callSuper("initialize", {radius: evtRadius});
-		this.top = y-evtRadius;
-		this.left = x-evtRadius;
-		
+		if(x && y){
+			this.top = y-evtRadius;
+			this.left = x-evtRadius;
+		}
 		this.setIcon("js/res/Red_X.png");
-		/**this.on("mousedown", function(){
-			if(selectedTool===""){
-				
-			}
-			if(!selectedTool.includes("event"))
-				return;
-			if(selectedTool==="event:remove")
-				canvas.remove(this);
-				//also need to remove this from all threads
-			else
-				return;
-			selectedTool = "";
-		});*/
-
 	},
 	
 	fill: "#ddd",
 	lockMovementX: false,
 	title: "NEW EVENT",
-	details: "Enter details here"
+	details: "Enter details here",
+	
+	toObject: function(propOut) {
+		return {};
+	},
+	
+	toThreadProperty: function(propOpt) {
+		return fabric.util.object.extend(this.callSuper('toObject'), {
+			title: this.title,
+			details: this.details
+		});
+	}
 	
 });
+var Event = fabric.Event;
 
-var Thread = fabric.util.createClass(fabric.Path, {
+fabric.Event.fromObject = function(object, callback){
+	var newEvent = new Event();
+	newEvent.set({
+		title: object.title,
+		left: object.left,
+		top: object.top,
+		details: object.details
+	});
+	callback && callback(newEvent);
+	return newEvent;
+}
+
+fabric.Thread = fabric.util.createClass(fabric.Path, {
 
 	type: "thread",
 	
@@ -112,7 +123,7 @@ var Thread = fabric.util.createClass(fabric.Path, {
 			}
 		});
 		this.on("mousedown", function(){
-			if(!selectedTool.includes("thread"))
+			if(!selectedTool || !selectedTool.includes("thread"))
 				return;
 			if(selectedTool==="thread:remove"){
 				canvas.remove(this);
@@ -154,13 +165,52 @@ var Thread = fabric.util.createClass(fabric.Path, {
 		if(this.iconLoaded){
 			ctx.drawImage(this.buttonIcon, this.imageOffset-this.width/2, this.imageOffset-this.height/2, this.width-2*this.imageOffset, this.height-2*this.imageOffset);
 		}
-  	}
+  	},
+	
+	toObject: function(propOpt) {
+		var writableEvents = new Array();
+		for (var evt of this.events){
+			writableEvents.push(evt.toThreadProperty());
+		}
+		return fabric.util.object.extend(this.callSuper('toObject'), {
+			title: this.title,
+			events: writableEvents
+		});
+	}
 
 });
+var Thread = fabric.Thread;
 
+fabric.Thread.fromObject = function(object, callback){
+	var newThread = new Thread();
+	newThread.title = object.title;
+	newThread.stroke = object.stroke;
+	newThread.top = object.top;
+	if(object.events){
+		fabric.util.enlivenObjects(object.events, function(enlivenedEvents){
+			newThread.events = enlivenedEvents;
+		});
+	}
+	callback && callback(newThread);
+	return newThread;
+}
 
-
-
+fabric.StoryTitle = fabric.util.createClass(fabric.IText, {
+	type: "story-title",
+	selectable: false,
+	top: 0,
+	left: 0,
+	initialize: function(title){
+		this.callSuper("initialize", title);
+		this.keysMap[13] = 'exitEditing';
+	}
+});
+var StoryTitle = fabric.StoryTitle;
+fabric.StoryTitle.fromObject = function(object, callback){
+	var newTitle = new StoryTitle(object.text);
+	callback && callback(newTitle);
+	return newTitle;
+}
 
 
 /**

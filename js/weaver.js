@@ -1,5 +1,4 @@
 canvas = new fabric.Canvas("fabric_canvas");
-threads = new Array();
 tools = new Array();
 var selectedTool = null;
 canvas.selection = false;
@@ -14,10 +13,12 @@ var deltaX;
 
 //tools
 tools = new Array();
+tools.push(saveFileTool);
+tools.push(loadFileTool);
 tools.push(addEventTool);
 tools.push(addThreadTool);
 
-//update this variable to the fabric variable that tracks selected items when you have internet access
+//TODO: @Leif update this variable to the fabric variable that tracks selected items when you have internet access
 var updateLaterFabricSelectedItem = null;
 
 
@@ -52,6 +53,9 @@ function updateSelection(options){
 	else{
 		selectToolset("default-tools");
 	}
+	for(var title of canvas.getObjects("story-title")){
+		title.exitEditing();
+	}
 }
 
 
@@ -68,7 +72,7 @@ function scrollOn(options){
 			if(scroller.scrollLeft>canvasWidth-screenWidth){
 				canvasWidth = canvasWidth+0.1*screenWidth;
 				//document.getElementById("fabric-canvas").width=canvasWidth;
-				
+				/*
 				for(let element of threads){
 					if(!element.clipped)
 					{
@@ -77,9 +81,9 @@ function scrollOn(options){
 						element.path[element.path.length-1][1] = canvasWidth;
 						element.width = canvasWidth;
 						element.dirty = true;
-						canvas.renderAll();*/
+						canvas.renderAll();
 					}
-				}
+				}*/
 			}
 		}
 	});
@@ -91,22 +95,22 @@ function scrollOn(options){
 	});
 }
 
+function setupCanvasEvents() {
+	canvas.on({
+		"selection:created": updateSelection,
+		"selection:updated": updateSelection,
+		"selection:cleared": updateSelection
+	});
 
-canvas.on({
-	"selection:created": updateSelection,
-	"selection:updated": updateSelection,
-	"selection:cleared": updateSelection
-});
-
-canvas.on("mouse:down", function(options){
-	if(selectedTool){
-		selectedTool.onuse(options);
-		clearTool();
-	} else if(!options.target){
-		scrollOn(options);
-	}
-});
-
+	canvas.on("mouse:down", function(options){
+		if(selectedTool){
+			selectedTool.onuse(options);
+			clearTool();
+		} else if(!options.target){
+			scrollOn(options);
+		}
+	});
+} setupCanvasEvents();
 
 
 
@@ -144,7 +148,9 @@ function updateText(source){
 var firstthread = new Thread();
 firstthread.top = 100;
 canvas.add(firstthread);
-threads.push(firstthread);
+
+var title = new StoryTitle("NewStory");
+canvas.add(title);
 
 //just a helpful inspection function
 function showObject(obj){
