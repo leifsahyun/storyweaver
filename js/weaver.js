@@ -21,6 +21,7 @@ tools.push(removeEventTool);
 tools.push(removeThreadTool);
 tools.push(clipThreadTool);
 tools.push(mergeThreadTool);
+tools.push(splitThreadTool);
 
 
 function selectToolset(selectedSet){

@@ -106,7 +106,7 @@ clipThreadTool.onuse = function(options){
 	if(options.pointer.x<=this.originThread.left)
 		return true;
 	else
-		this.originThread.clip(options.pointer.x-this.originThread.left);
+		this.originThread.clip(options.pointer.x);
 	return true;
 }
 
@@ -117,14 +117,22 @@ mergeThreadTool.onselect = function(options){
 }
 mergeThreadTool.onuse = function(options){
 	var targetThread = findNearestThread(options.pointer.x, options.pointer.y);
-	var midpoint = (this.originThread.top + targetThread.top + threadWidth)/2;
 	this.originThread.clip(options.pointer.x);
-	targetThread.clip(options.pointer.x);
-	this.originThread.path.push(["L",options.pointer.x+20,midpoint-this.originThread.top]);
-	targetThread.path.push(["L",options.pointer.x+20,midpoint-targetThread.top]);
+	this.originThread.path.push(["L",this.originThread.clipPos+20,targetThread.top-this.originThread.top]);
+	canvas.renderAll();
+	return true;
+}
+
+var splitThreadTool = new Tool();
+splitThreadTool.id = "thread:split";
+splitThreadTool.onselect = function(options){
+	this.originThread = canvas.getActiveObject();
+}
+splitThreadTool.onuse = function(options){
 	var newThread = new Thread();
-	newThread.left = options.pointer.x+20;
-	newThread.top = midpoint-0.5*threadWidth;
+	newThread.top = this.originThread.top+3*threadWidth;
+	newThread.left = options.pointer.x;
+	newThread.path.splice(0,1,["M",0,this.originThread.top-newThread.top],["L",20,0]);
 	canvas.add(newThread);
 	canvas.renderAll();
 	return true;

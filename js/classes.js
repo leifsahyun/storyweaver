@@ -146,6 +146,7 @@ fabric.Thread = fabric.util.createClass(fabric.Path, {
 	},
 	
 	clip: function(pos){
+		pos = pos-this.left;
 		var found = false;
 		for(var vec of this.path){
 			if(vec[1]>=pos){
@@ -215,6 +216,7 @@ fabric.Thread.fromObject = function(object, callback){
 		title: object.title,
 		stroke: object.stroke,
 		top: object.top,
+		left: object.left,
 		path: object.path,
 		clipped: object.clipped,
 		clipPos: object.clipPos
