@@ -17,9 +17,8 @@ tools.push(saveFileTool);
 tools.push(loadFileTool);
 tools.push(addEventTool);
 tools.push(addThreadTool);
-
-//TODO: @Leif update this variable to the fabric variable that tracks selected items when you have internet access
-var updateLaterFabricSelectedItem = null;
+tools.push(removeEventTool);
+tools.push(removeThreadTool);
 
 
 function selectToolset(selectedSet){
@@ -41,7 +40,7 @@ function selectToolset(selectedSet){
 
 function updateSelection(options){
 	if(options.target){
-		updateLaterFabricSelectedItem = options.target;
+		//updateLaterFabricSelectedItem = options.target;
 		if(options.target.type==="thread"){
 			document.getElementById("thread-title").value=options.target.title;
 		} else if (options.target.type==="event"){
@@ -104,10 +103,10 @@ function setupCanvasEvents() {
 
 	canvas.on("mouse:down", function(options){
 		if(selectedTool){
-			selectedTool.onuse(options);
-			clearTool();
+			if(selectedTool.onuse(options))
+				clearTool();
 		} else if(!options.target){
-			scrollOn(options);
+			//scrollOn(options);
 		}
 	});
 } setupCanvasEvents();
@@ -132,15 +131,14 @@ function clearTool(){
 
 
 function updateText(source){
-	//alert("updating text");
+	var selectedItem = canvas.getActiveObject();
 	if(source.includes("title")){
-		//alert("title");
-		updateLaterFabricSelectedItem.title = document.getElementById(source).value;
-		updateLaterFabricSelectedItem.dirty=true;
+		selectedItem.title = document.getElementById(source).value;
+		selectedItem.dirty=true;
 		canvas.renderAll();
 	} else {
 		//alert("details");
-		updateLaterFabricSelectedItem.details = document.getElementById(source).value;
+		selectedItem.details = document.getElementById(source).value;
 	}
 }
 

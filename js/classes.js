@@ -141,6 +141,11 @@ fabric.Thread = fabric.util.createClass(fabric.Path, {
 		this.events.push(evt);
 	},
 	
+	removeEvent: function(evt){
+		if(this.events.includes(evt))
+			this.events.splice(this.events.indexOf(evt),1);
+	},
+	
 	clip: function(){
 		this.clipped = true;
 	},
