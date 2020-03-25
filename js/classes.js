@@ -128,9 +128,6 @@ fabric.Thread = fabric.util.createClass(fabric.Path, {
 			if(selectedTool==="thread:remove"){
 				canvas.remove(this);
 			}
-			else if(selectedTool==="thread:clip"){
-				//clip threads here
-			}
 			else
 				return;
 			selectedTool = "";
@@ -142,23 +139,47 @@ fabric.Thread = fabric.util.createClass(fabric.Path, {
 	},
 	
 	removeEvent: function(evt){
-		if(this.events.includes(evt))
+		if(this.events.includes(evt)){
 			this.events.splice(this.events.indexOf(evt),1);
+			canvas.remove(evt);
+		}
 	},
 	
-	clip: function(){
-		this.clipped = true;
+	clip: function(pos){
+		var found = false;
+		for(var vec of this.path){
+			if(vec[1]>=pos){
+				vec[1] = pos;
+				found = true;
+				this.clipped = true;
+				this.clipPos = pos;
+				this.path.splice(this.path.indexOf(vec)+1);
+				canvas.renderAll();
+			}
+		}
+		if(found){
+			for(e of this.events){
+				if(e.left+evtRadius>pos){
+					this.removeEvent(e);
+				}
+			}
+		} else {
+			this.path[this.path.length-1][1] = pos;
+			canvas.renderAll();
+		}
 	},
 	
 	objectCaching: false,
 	hasControls: false,
 	lockMovementX: true,
 	strokeWidth: threadWidth,
+	fill: 'transparent',
 	title: "NEW THREAD",
 	titleFill: '#000',
 	titleFont: '20px Helvetica',
 	titleOffset: 0,
 	clipped: false,
+	clipPos: 0,
 	
 	_render: function(ctx) {
     	this.callSuper('_render', ctx);
@@ -179,7 +200,9 @@ fabric.Thread = fabric.util.createClass(fabric.Path, {
 		}
 		return fabric.util.object.extend(this.callSuper('toObject'), {
 			title: this.title,
-			events: writableEvents
+			events: writableEvents,
+			clipped: this.clipped,
+			clipPos: this.clipPos
 		});
 	}
 
@@ -188,9 +211,14 @@ var Thread = fabric.Thread;
 
 fabric.Thread.fromObject = function(object, callback){
 	var newThread = new Thread();
-	newThread.title = object.title;
-	newThread.stroke = object.stroke;
-	newThread.top = object.top;
+	newThread.set({
+		title: object.title,
+		stroke: object.stroke,
+		top: object.top,
+		path: object.path,
+		clipped: object.clipped,
+		clipPos: object.clipPos
+	});
 	if(object.events){
 		fabric.util.enlivenObjects(object.events, function(enlivenedEvents){
 			newThread.events = enlivenedEvents;

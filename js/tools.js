@@ -51,7 +51,7 @@ loadFileTool.onselect = function(){
 var addEventTool = new Tool();
 addEventTool.id = "add:event";
 addEventTool.onuse = function(options){
-	targetThread = findNearestThread(options.pointer.y);
+	var targetThread = findNearestThread(options.pointer.x, options.pointer.y);
 	if(targetThread){
 		var evt = new Event(options.pointer.x, targetThread.top+0.5*threadWidth);
 		canvas.add(evt);
@@ -80,7 +80,6 @@ removeEventTool.onselect = function(options){
 	for(var t of threads){
 		t.removeEvent(selectedEvent);
 	}
-	canvas.remove(selectedEvent);
 	delete selectedEvent;
 	clearTool();
 }
@@ -100,23 +99,54 @@ removeThreadTool.onselect = function(options){
 
 var clipThreadTool = new Tool();
 clipThreadTool.id = "thread:clip";
+clipThreadTool.onselect = function(options){
+	this.originThread = canvas.getActiveObject();
+}
 clipThreadTool.onuse = function(options){
-	
+	if(options.pointer.x<=this.originThread.left)
+		return true;
+	else
+		this.originThread.clip(options.pointer.x-this.originThread.left);
+	return true;
 }
 
-const threadSelectRadius = 15;
-function findNearestThread(y){
+var mergeThreadTool = new Tool();
+mergeThreadTool.id = "thread:merge";
+mergeThreadTool.onselect = function(options){
+	this.originThread = canvas.getActiveObject();
+}
+mergeThreadTool.onuse = function(options){
+	var targetThread = findNearestThread(options.pointer.x, options.pointer.y);
+	var midpoint = (this.originThread.top + targetThread.top + threadWidth)/2;
+	this.originThread.clip(options.pointer.x);
+	targetThread.clip(options.pointer.x);
+	this.originThread.path.push(["L",options.pointer.x+20,midpoint-this.originThread.top]);
+	targetThread.path.push(["L",options.pointer.x+20,midpoint-targetThread.top]);
+	var newThread = new Thread();
+	newThread.left = options.pointer.x+20;
+	newThread.top = midpoint-0.5*threadWidth;
+	canvas.add(newThread);
+	canvas.renderAll();
+	return true;
+}
+
+
+
+const threadSelectRadius = 40;
+function findNearestThread(x,y){
 	let threads = canvas.getObjects("thread");
 	let targetThread = threads[0];
 	let minDistance = -1;
 	for (let element of threads) {
+		if(element.clipped && element.clipPos<x)
+			continue;
 		let dist = Math.abs(element.top+0.5*threadWidth - y);
 		if(dist<minDistance || minDistance==-1) {
 			minDistance = dist;
 			targetThread = element;
 		}
 	}
-	if(minDistance < 40)
+	if(minDistance < threadSelectRadius)
 		return targetThread;
 	else
 		return null;
