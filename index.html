@@ -5,6 +5,7 @@
 	<script src="js/fabric.min.js"></script>
 	<script src="js/classes.js"></script>
 	<script src="js/tools.js"></script>
+	<script src="js/saving.js"></script>
 	<title>Storyweaver</title>
   </head>
   <body> <!--onload="init()">-->
@@ -21,6 +22,8 @@
 		  <button onclick="selectTool('file:load')">Load File</button>
 		  <button onclick="selectTool('add:thread')">Add Thread</button>
 		  <button onclick="selectTool('add:event')">Add Event</button>
+		  <button id="drawButton" onclick="selectTool('default:draw')">Draw</button>
+		  <button onclick="selectTool('default:text')">Add Note</button>
 		</div>
 	  </div>
 	  <div class="button-menu" id="thread-tools" style="display:none">
@@ -37,8 +40,7 @@
 		<h>Event Tools</h>
 		<div>
 		  <button onclick="selectTool('event:remove')">Remove Event</button>
-		  <button onclick="selectTool('event:link')">Link Event</button>
-		  <button onclick="selectTool('event:clone')">Clone Event</button>
+		  <button onclick="selectTool('event:link')">Link Simultaneous Event</button>
 		</div>
 		<textarea id="event-title" onchange="updateText('event-title')"></textarea>
 		<textarea id="event-details" onchange="updateText('event-details')"></textarea>

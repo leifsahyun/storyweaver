@@ -3,6 +3,35 @@ tools = new Array();
 var selectedTool = null;
 canvas.selection = false;
 
+//set initial drawing params
+canvas.isDrawingMode = false;
+canvas.freeDrawingBrush = new fabric["PencilBrush"](canvas);
+canvas.freeDrawingBrush.color = 'black';
+canvas.freeDrawingBrush.width = 5;
+
+//set up delete key listener for the canvas only
+//deleting things from the canvas is inelegant in current design,
+//both this method and the tools use seperate deletion functions for different objects
+//it would be more elegant for at least all my objects to have a remove method where they delete themselves
+var canvasWrapper = document.getElementById('canvas-div');
+canvasWrapper.tabIndex = 1000;
+canvasWrapper.addEventListener("keydown", function(e){
+	if(46===e.keyCode){ //46 is the delete key
+		var toDelete = canvas.getActiveObject();
+		if(toDelete.type==="thread"){
+			removeThreadTool.onselect();
+			return;
+		}
+		if(toDelete.type==="event"||toDelete.type==="mergeEvent"){
+			removeEventTool.onselect();
+			return;
+		}
+		canvas.discardActiveObject();
+		canvas.remove(toDelete);
+		delete toDelete;
+	}
+}, false);
+
 //scrolling vars
 const scrollingCoef = 1.15;
 const screenWidth = 1000;
@@ -22,6 +51,8 @@ tools.push(removeThreadTool);
 tools.push(clipThreadTool);
 tools.push(mergeThreadTool);
 tools.push(splitThreadTool);
+tools.push(drawTool);
+tools.push(textTool);
 
 
 function selectToolset(selectedSet){
@@ -46,11 +77,13 @@ function updateSelection(options){
 		//updateLaterFabricSelectedItem = options.target;
 		if(options.target.type==="thread"){
 			document.getElementById("thread-title").value=options.target.title;
-		} else if (options.target.type==="event"){
+		} else if (options.target.type==="event" || options.target.type==="mergeEvent"){
 			document.getElementById("event-title").value=options.target.title;
 			document.getElementById("event-details").value=options.target.details;
 		}
 		selectToolset(options.target.type+"-tools");
+		if(options.target.type==="mergeEvent")
+			selectToolset("event-tools");
 	}
 	else{
 		selectToolset("default-tools");

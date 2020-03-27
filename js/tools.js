@@ -8,43 +8,55 @@ class Tool {
 	}
 }
 
+var drawTool = new Tool();
+drawTool.id = "default:draw";
+drawTool.onselect = function(){
+	canvas.isDrawingMode = !canvas.isDrawingMode;
+	var drawButton = document.getElementById("drawButton");
+	if(canvas.isDrawingMode){
+		drawButton.style.background = 'black';
+		drawButton.style.color = 'white';
+	} else {
+		drawButton.style.background = '';
+		drawButton.style.color = '';
+	}
+	clearTool();
+}
+
+var textTool = new Tool();
+textTool.id = "default:text";
+textTool.onuse = function(options){
+	var newText = new fabric.IText("new note", {left: options.pointer.x, top: options.pointer.y});
+	newText.fontSize = 16;
+	/**
+	//The following anti-scaling function is unnecessary because text is only on one line
+	newText.on('scaling', function(e){
+		var w=newText.width*newText.scaleX,
+			h=newText.height*newText.scaleY;
+		newText.set({
+			'height': h,
+			'width': w,
+			'scaleX': 1,
+			'scaleY': 1
+		});
+	});
+	*/
+	canvas.add(newText);
+	return true;
+}
+
+
 var saveFileTool = new Tool();
 saveFileTool.id = "file:save";
 saveFileTool.onselect = function(){
-	var title = canvas.getObjects("story-title")[0].text;
-	var jsonRep = canvas.toJSON();
-	var stringified = JSON.stringify(jsonRep);
-	var a = document.createElement('a');
-	a.setAttribute('href', 'data:text/plain;charset=utf-8,'+encodeURIComponent(stringified));
-	a.setAttribute('download', title+'.json');
-	a.click()
+	save();
 	clearTool();
 };
 
 var loadFileTool = new Tool();
 loadFileTool.id = "file:load";
 loadFileTool.onselect = function(){
-	var input = document.createElement('input');
-	input.setAttribute('type', 'file');
-	input.addEventListener("change", function(){
-		var file = input.files[0];
-		file.text().then(function(fileText){
-			canvas.dispose();
-			canvas = new fabric.Canvas("fabric_canvas");
-			canvas.loadFromJSON(fileText, function(){
-				var threads = canvas.getObjects("thread");
-				for (var t of threads){
-					for (var e of t.events){
-						canvas.add(e);
-					}
-				}
-			});
-			canvas.renderAll();
-			setupCanvasEvents();
-			canvas.selection = false;
-		});
-	});
-	input.click();
+	load();
 	clearTool();
 };
 
@@ -80,6 +92,7 @@ removeEventTool.onselect = function(options){
 	for(var t of threads){
 		t.removeEvent(selectedEvent);
 	}
+	canvas.remove(selectedEvent);
 	delete selectedEvent;
 	clearTool();
 }
@@ -117,8 +130,10 @@ mergeThreadTool.onselect = function(options){
 }
 mergeThreadTool.onuse = function(options){
 	var targetThread = findNearestThread(options.pointer.x, options.pointer.y);
-	this.originThread.clip(options.pointer.x);
-	this.originThread.path.push(["L",this.originThread.clipPos+20,targetThread.top-this.originThread.top]);
+	mergeEvent = new MergeEvent(options.pointer.x, targetThread.top+0.5*threadWidth);
+	mergeEvent.setOriginThread(this.originThread);
+	targetThread.addEvent(mergeEvent);
+	canvas.add(mergeEvent);
 	canvas.renderAll();
 	return true;
 }
@@ -134,6 +149,11 @@ splitThreadTool.onuse = function(options){
 	newThread.left = options.pointer.x;
 	newThread.path.splice(0,1,["M",0,this.originThread.top-newThread.top],["L",20,0]);
 	canvas.add(newThread);
+	splitEvent = new MergeEvent(options.pointer.x, this.originThread.top+0.5*threadWidth);
+	splitEvent.mergeType = "split";
+	splitEvent.setOriginThread(newThread);
+	this.originThread.addEvent(splitEvent);
+	canvas.add(splitEvent);
 	canvas.renderAll();
 	return true;
 }

@@ -81,13 +81,13 @@ fabric.Event = fabric.util.createClass(LabeledButton, {
 	details: "Enter details here",
 	
 	toObject: function(propOut) {
-		return {};
-	},
-	
-	toThreadProperty: function(propOpt) {
+		if(!propOut)
+			propOut = {};
 		return fabric.util.object.extend(this.callSuper('toObject'), {
+			...propOut,
 			title: this.title,
-			details: this.details
+			details: this.details,
+			uid: this.uid
 		});
 	}
 	
@@ -100,11 +100,66 @@ fabric.Event.fromObject = function(object, callback){
 		title: object.title,
 		left: object.left,
 		top: object.top,
-		details: object.details
+		details: object.details,
+		uid: object.uid
 	});
 	callback && callback(newEvent);
 	return newEvent;
 }
+
+fabric.MergeEvent = fabric.util.createClass(fabric.Event, {
+	type: "mergeEvent",
+	mergeType: "merge", //can be split instead
+	originThread: null,
+	setOriginThread: function(thread){
+		this.originThread = thread;
+		this.recalculatePositions();
+		this.originThread.on("moved", this.recalculatePositions.bind(this));
+		this.on("moved", this.recalculatePositions);
+	},
+	recalculatePositions: function(){
+		if(!this.originThread)
+			return;
+		if(this.mergeType=="merge"){
+			if(this.originThread.clipped)
+				this.originThread.clip(this.originThread.clipPos);
+			this.originThread.clip(this.left+evtRadius-20);
+			this.originThread.path.push(["L",this.originThread.clipPos+20,this.top-this.originThread.top]);
+		} else {
+			this.originThread.left = this.left;
+			this.originThread.path.splice(0,2,["M",0,this.top-this.originThread.top],["L",20,0]);
+		}
+		canvas.renderAll();
+	},
+	toObject: function(propOut) {
+		if(!propOut)
+			propOut = {};
+		return fabric.util.object.extend(this.callSuper('toObject'), {
+			...propOut,
+			originThread: this.originThread.uid,
+			mergeType: this.mergeType
+		});
+	}
+});
+var MergeEvent = fabric.MergeEvent;
+
+fabric.MergeEvent.fromObject = function(object, callback){
+	var newEvent = new MergeEvent();
+	newEvent.set({
+		originThread: object.originThread,
+		mergeType: object.mergeType,
+		title: object.title,
+		left: object.left,
+		top: object.top,
+		details: object.details,
+		uid: object.uid
+	});
+	callback && callback(newEvent);
+	return newEvent;
+}
+
+
+
 
 fabric.Thread = fabric.util.createClass(fabric.Path, {
 
@@ -120,6 +175,7 @@ fabric.Thread = fabric.util.createClass(fabric.Path, {
 			for (let element of this.events){
 				element.set({top: this.top+0.5*threadWidth-evtRadius});
 				element.setCoords();
+				element.trigger("moved");
 			}
 		});
 		this.on("mousedown", function(){
@@ -146,7 +202,29 @@ fabric.Thread = fabric.util.createClass(fabric.Path, {
 	},
 	
 	clip: function(pos){
+		this.clipPos = pos;
+		this.clipped = true;
 		pos = pos-this.left;
+		var newWidth = pos;
+		var defaultStart = ["M", 0, 0];
+		if(this.path[0].every((val,idx)=>val===defaultStart[idx]))
+			this.path.splice(1);
+		else
+			this.path.splice(2);
+		this.path.push(["L", pos, 0]);
+		//when modifying a path, fabric does not update width of path
+		this.set({
+			'width': newWidth,
+			'scaleX': 1
+		});
+		//...updating width of path does not update path offset and path is measured from center
+		this.pathOffset.x = newWidth/2;
+		//...updating width of path does not update bounding box (setCoords does)
+		this.setCoords();
+		//render changes
+		canvas.renderAll();
+		/**
+		//old, overly complicated code for clipping path with splicing
 		var found = false;
 		for(var vec of this.path){
 			if(vec[1]>=pos){
@@ -168,6 +246,7 @@ fabric.Thread = fabric.util.createClass(fabric.Path, {
 			this.path[this.path.length-1][1] = pos;
 			canvas.renderAll();
 		}
+		*/
 	},
 	
 	objectCaching: false,
@@ -194,16 +273,20 @@ fabric.Thread = fabric.util.createClass(fabric.Path, {
 		}
   	},
 	
-	toObject: function(propOpt) {
+	toObject: function(propOut) {
+		if(!propOut)
+			propOut = {};
 		var writableEvents = new Array();
 		for (var evt of this.events){
-			writableEvents.push(evt.toThreadProperty());
+			writableEvents.push(evt.uid);
 		}
 		return fabric.util.object.extend(this.callSuper('toObject'), {
+			...propOut,
 			title: this.title,
 			events: writableEvents,
 			clipped: this.clipped,
-			clipPos: this.clipPos
+			clipPos: this.clipPos,
+			uid: this.uid
 		});
 	}
 
@@ -219,13 +302,10 @@ fabric.Thread.fromObject = function(object, callback){
 		left: object.left,
 		path: object.path,
 		clipped: object.clipped,
-		clipPos: object.clipPos
+		clipPos: object.clipPos,
+		events: object.events,
+		uid: object.uid
 	});
-	if(object.events){
-		fabric.util.enlivenObjects(object.events, function(enlivenedEvents){
-			newThread.events = enlivenedEvents;
-		});
-	}
 	callback && callback(newThread);
 	return newThread;
 }
