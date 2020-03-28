@@ -26,10 +26,10 @@ drawTool.onselect = function(){
 var textTool = new Tool();
 textTool.id = "default:text";
 textTool.onuse = function(options){
-	var newText = new fabric.IText("new note", {left: options.pointer.x, top: options.pointer.y});
+	var newText = new fabric.Textbox("new note", {left: options.pointer.x, top: options.pointer.y});
 	newText.fontSize = 16;
 	/**
-	//The following anti-scaling function is unnecessary because text is only on one line
+	//The following anti-scaling function is unnecessary
 	newText.on('scaling', function(e){
 		var w=newText.width*newText.scaleX,
 			h=newText.height*newText.scaleY;

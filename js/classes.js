@@ -1,5 +1,7 @@
 const threadWidth = 20;
 const evtRadius = 1*threadWidth;
+const maxLineWidth = 150;
+const lineHeight = 20;
 //const buttonRadius = 50; obsolete from canvas buttons idea
 
 const threadColors = [
@@ -50,14 +52,16 @@ var LabeledButton = fabric.util.createClass(fabric.Circle, {
 	
 	_render: function(ctx) {
     	this.callSuper('_render', ctx);
-
-    	ctx.font = this.titleFont;
-    	ctx.fillStyle = this.titleFill;
-		ctx.fillText(this.title, -this.width/2-50, -this.height/2-this.titleOffset);
-    	
+		
 		if(this.iconLoaded){
 			ctx.drawImage(this.buttonIcon, this.imageOffset-this.width/2, this.imageOffset-this.height/2, this.width-2*this.imageOffset, this.height-2*this.imageOffset);
 		}
+
+		ctx.font = this.titleFont;
+		ctx.fillStyle = this.titleFill;
+		ctx.textAlign = "center";
+		drawElementTitle(ctx, this.title, 0, -this.height/2-this.titleOffset);
+		
   	}
 	
 });
@@ -265,14 +269,15 @@ fabric.Thread = fabric.util.createClass(fabric.Path, {
 	
 	_render: function(ctx) {
     	this.callSuper('_render', ctx);
-
-    	ctx.font = this.titleFont;
-    	ctx.fillStyle = this.titleFill;
-		ctx.fillText(this.title, -this.width/2, -this.strokeWidth-this.titleOffset);
-    	
-		if(this.iconLoaded){
+		
+		ctx.font = this.titleFont;
+		ctx.fillStyle = this.titleFill;
+		ctx.textAlign = "left";
+		drawElementTitle(ctx, this.title, -this.width/2, -this.strokeWidth-this.titleOffset);
+		
+		/*if(this.iconLoaded){
 			ctx.drawImage(this.buttonIcon, this.imageOffset-this.width/2, this.imageOffset-this.height/2, this.width-2*this.imageOffset, this.height-2*this.imageOffset);
-		}
+		}*/
   	},
 	
 	toObject: function(propOut) {
@@ -369,6 +374,28 @@ fabric.EventLink.fromObject = function(object, callback){
 	newLink.events = object.events;
 	callback && callback(newLink);
 	return newLink;
+}
+
+
+
+function drawElementTitle(ctx, title, baseX, baseY){
+	var words = title.split(' ');
+	var lines = [];
+	var line = '';
+	for(var word of words){
+		var testLine = line + word + ' ';
+		var testWidth = ctx.measureText(testLine).width;
+		if(testWidth>maxLineWidth && line!=''){
+			lines.push(line);
+			line = word+' ';
+		} else {
+			line = testLine;
+		}
+	}
+	lines.push(line);
+	for(var n=0; n<lines.length; n++){
+		ctx.fillText(lines[n], baseX, baseY-(lines.length-n-1)*lineHeight);
+	}
 }
 
 /**
