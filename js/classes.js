@@ -107,6 +107,8 @@ fabric.Event.fromObject = function(object, callback){
 	return newEvent;
 }
 
+
+
 fabric.MergeEvent = fabric.util.createClass(fabric.Event, {
 	type: "mergeEvent",
 	mergeType: "merge", //can be split instead
@@ -311,7 +313,7 @@ fabric.Thread.fromObject = function(object, callback){
 }
 
 fabric.StoryTitle = fabric.util.createClass(fabric.IText, {
-	type: "story-title",
+	type: "storyTitle",
 	selectable: false,
 	top: 0,
 	left: 0,
@@ -327,6 +329,47 @@ fabric.StoryTitle.fromObject = function(object, callback){
 	return newTitle;
 }
 
+
+
+fabric.EventLink = fabric.util.createClass(fabric.Line, {
+	type: "eventLink",
+	selectable: false,
+	stroke: 'black',
+	strokeDashArray: [3,2],
+	events: [],
+	setEvents: function(evts){
+		this.events = evts;
+		this.recalculatePositions();
+		this.events[0].on("moved", this.recalculatePositions.bind(this));
+		this.events[1].on("moved", this.recalculatePositions.bind(this));
+	},
+	recalculatePositions: function(){
+		if(!this.events || this.events.length<2)
+			return;
+		this.set({
+			x1: this.events[0].left+evtRadius,
+			y1: this.events[0].top+evtRadius,
+			x2: this.events[1].left+evtRadius,
+			y2: this.events[1].top+evtRadius});
+		canvas.renderAll();
+	},
+	toObject: function(propOut){
+		var writableEvents = new Array();
+		for (var evt of this.events){
+			writableEvents.push(evt.uid);
+		}
+		return fabric.util.object.extend(this.callSuper('toObject'), {
+			events: writableEvents
+		});
+	}
+});
+var EventLink = fabric.EventLink;
+fabric.EventLink.fromObject = function(object, callback){
+	var newLink = new EventLink();
+	newLink.events = object.events;
+	callback && callback(newLink);
+	return newLink;
+}
 
 /**
 

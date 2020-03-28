@@ -3,7 +3,7 @@ function save() {
 	for(var obj of canvas.getObjects()){
 		obj.uid = current_uid++;
 	}
-	var title = canvas.getObjects("story-title")[0].text;
+	var title = canvas.getObjects("storyTitle")[0].text;
 	var jsonRep = canvas.toJSON();
 	var stringified = JSON.stringify(jsonRep);
 	var a = document.createElement('a');
@@ -24,6 +24,7 @@ function load() {
 			canvas.renderAll();
 			setupCanvasEvents();
 			canvas.selection = false;
+			canvas.preserveObjectStacking = true;
 		});
 	});
 	input.click();
@@ -51,5 +52,17 @@ function relink(){
 				merge.setOriginThread(t);
 			}
 		}
+	}
+	var eventLinks = canvas.getObjects("eventLink");
+	for (var eventLink of eventLinks){
+		var newEvents = new Array();
+		for (var evt of events){
+			for (var id of eventLink.events){
+				if(evt.uid===id)
+					newEvents.push(evt);
+			}
+		}
+		eventLink.setEvents(newEvents);
+		eventLink.sendToBack();
 	}
 }

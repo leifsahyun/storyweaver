@@ -2,6 +2,7 @@ canvas = new fabric.Canvas("fabric_canvas");
 tools = new Array();
 var selectedTool = null;
 canvas.selection = false;
+canvas.preserveObjectStacking = true;
 
 //set initial drawing params
 canvas.isDrawingMode = false;
@@ -53,6 +54,8 @@ tools.push(mergeThreadTool);
 tools.push(splitThreadTool);
 tools.push(drawTool);
 tools.push(textTool);
+tools.push(addLinkTool);
+tools.push(removeLinkTool);
 
 
 function selectToolset(selectedSet){

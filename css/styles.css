@@ -19,6 +19,18 @@ footer
 #tool-menu
 {
   position: absolute;
+  width: 100%;
   bottom: 0px;
+}
+
+#event-title
+{
+	width: 350px;
+	height: 16px;
+}
+#event-details
+{
+	width: 350px;
+	height: 48px;
 }
 

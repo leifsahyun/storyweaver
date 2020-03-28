@@ -11,7 +11,7 @@
   <body> <!--onload="init()">-->
 
     <div id="canvas-div">
-      <canvas width="1000" height="800" id="fabric_canvas"></canvas>
+      <canvas width="1000" height="700" id="fabric_canvas"></canvas>
 	  <script src="js/weaver.js"></script>
     </div>
 	<div id="tool-menu">
@@ -40,10 +40,15 @@
 		<h>Event Tools</h>
 		<div>
 		  <button onclick="selectTool('event:remove')">Remove Event</button>
-		  <button onclick="selectTool('event:link')">Link Simultaneous Event</button>
+		  <button onclick="selectTool('event:link')">Link Related Event</button>
+		  <button onclick="selectTool('event:unlink')">Delete All Links</button>
 		</div>
-		<textarea id="event-title" onchange="updateText('event-title')"></textarea>
-		<textarea id="event-details" onchange="updateText('event-details')"></textarea>
+		<div>
+		  <textarea id="event-title" onchange="updateText('event-title')"></textarea>
+		</div>
+		<div>
+		  <textarea id="event-details" onchange="updateText('event-details')"></textarea>
+		</div>
 	  </div>
 	  <footer>
 		<p>Created by Leif Sahyun, copyright 2020</p>

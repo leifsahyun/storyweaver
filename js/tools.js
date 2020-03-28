@@ -125,11 +125,13 @@ clipThreadTool.onuse = function(options){
 
 var mergeThreadTool = new Tool();
 mergeThreadTool.id = "thread:merge";
-mergeThreadTool.onselect = function(options){
+mergeThreadTool.onselect = function(){
 	this.originThread = canvas.getActiveObject();
 }
 mergeThreadTool.onuse = function(options){
 	var targetThread = findNearestThread(options.pointer.x, options.pointer.y);
+	if(!targetThread)
+		return false;
 	mergeEvent = new MergeEvent(options.pointer.x, targetThread.top+0.5*threadWidth);
 	mergeEvent.setOriginThread(this.originThread);
 	targetThread.addEvent(mergeEvent);
@@ -140,7 +142,7 @@ mergeThreadTool.onuse = function(options){
 
 var splitThreadTool = new Tool();
 splitThreadTool.id = "thread:split";
-splitThreadTool.onselect = function(options){
+splitThreadTool.onselect = function(){
 	this.originThread = canvas.getActiveObject();
 }
 splitThreadTool.onuse = function(options){
@@ -157,6 +159,40 @@ splitThreadTool.onuse = function(options){
 	canvas.renderAll();
 	return true;
 }
+
+
+var addLinkTool = new Tool();
+addLinkTool.id = "event:link";
+addLinkTool.onselect = function(){
+	this.originEvent = canvas.getActiveObject();
+}
+addLinkTool.onuse = function(options){
+	var targetEvent = options.target;
+	if(!targetEvent)
+		return false;
+	if(targetEvent.type!="event" && targetEvent.type!="mergeEvent")
+		return true;
+	var newEventLink = new EventLink();
+	canvas.add(newEventLink);
+	newEventLink.setEvents([this.originEvent, targetEvent]);
+	newEventLink.sendToBack();
+	return true;
+}
+
+var removeLinkTool = new Tool();
+removeLinkTool.id = "event:unlink";
+removeLinkTool.onselect = function(){
+	var selectedEvent = canvas.getActiveObject();
+	var links = canvas.getObjects("eventLink");
+	for (var eventLink of links){
+		if(eventLink.events.includes(selectedEvent)){
+			canvas.remove(eventLink);
+			delete eventLink;
+		}
+	}
+	clearTool();
+}
+
 
 
 
