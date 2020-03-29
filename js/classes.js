@@ -121,7 +121,7 @@ fabric.MergeEvent = fabric.util.createClass(fabric.Event, {
 		this.originThread = thread;
 		this.recalculatePositions();
 		this.originThread.on("moved", this.recalculatePositions.bind(this));
-		this.on("moved", this.recalculatePositions);
+		this.on("moved", function(){this.recalculatePositions();this.originThread.trigger("moved");});
 	},
 	recalculatePositions: function(){
 		if(!this.originThread)
@@ -130,7 +130,7 @@ fabric.MergeEvent = fabric.util.createClass(fabric.Event, {
 			if(this.originThread.clipped)
 				this.originThread.clip(this.originThread.clipPos);
 			this.originThread.clip(this.left+evtRadius-20);
-			this.originThread.path.push(["L",this.originThread.clipPos+20,this.top-this.originThread.top]);
+			this.originThread.path.push(["L",this.originThread.clipPos+20-this.originThread.left,this.top-this.originThread.top]);
 		} else {
 			this.originThread.left = this.left;
 			this.originThread.path.splice(0,2,["M",0,this.top-this.originThread.top],["L",20,0]);
